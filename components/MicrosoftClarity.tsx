@@ -75,10 +75,3 @@ export const ClarityTracking = {
     clarityEvent('lead_generated', { source })
   },
 }
-
-// Type declaration for window.clarity
-declare global {
-  interface Window {
-    clarity: (action: string, ...args: any[]) => void
-  }
-}

@@ -10,13 +10,6 @@ if (!GA_MEASUREMENT_ID) {
   console.info('Google Analytics not configured - skipping initialization')
 }
 
-declare global {
-  interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
-  }
-}
-
 // Track page views
 export function useGoogleAnalytics() {
   const pathname = usePathname()

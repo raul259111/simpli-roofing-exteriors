@@ -31,8 +31,8 @@ export default function ContactForm({ service, source = 'Contact Form', compact 
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
-      service: service as any,
-      state: 'UT'
+      service: service as ContactFormData['service'],
+      state: 'UT' as const
     }
   })
 

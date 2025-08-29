@@ -51,8 +51,7 @@ export const contactFormSchema = z.object({
   
   state: z
     .string()
-    .length(2, 'Please select a state')
-    .default('UT'),
+    .length(2, 'Please select a state'),
   
   postalCode: z
     .string()

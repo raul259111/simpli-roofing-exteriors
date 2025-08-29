@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 import AdminBlogContent from './AdminBlogContent'
 
 export const metadata: Metadata = {
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminBlogPage() {
-  return <AdminBlogContent />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminBlogContent />
+    </Suspense>
+  )
 }

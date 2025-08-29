@@ -7,6 +7,7 @@ import { contactFormSchema, US_STATES } from '@/lib/validations'
 import { z } from 'zod'
 import { Loader2, CheckCircle, AlertCircle, Phone, Mail, User, MapPin, Briefcase, FileText } from 'lucide-react'
 import { GAEvent } from '@/components/GoogleAnalytics'
+import { ClarityTracking } from '@/components/MicrosoftClarity'
 
 type ServiceFormData = z.infer<typeof contactFormSchema>
 
@@ -30,6 +31,7 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
     type: 'success' | 'error' | null
     message: string
   }>({ type: null, message: '' })
+  const [hasStartedForm, setHasStartedForm] = useState(false)
 
   const formTitle = title || `Get Your Free ${service.charAt(0).toUpperCase() + service.slice(1)} Quote`
 
@@ -45,6 +47,15 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
       state: 'UT'
     }
   })
+
+  // Track form start
+  const handleFormInteraction = () => {
+    if (!hasStartedForm) {
+      setHasStartedForm(true)
+      GAEvent.custom('form_start', { form: `${service}_quote_form` })
+      ClarityTracking.formStart(`${service}_quote_form`)
+    }
+  }
 
   const onSubmit = async (data: ServiceFormData) => {
     setIsSubmitting(true)
@@ -63,11 +74,19 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
       const result = await response.json()
 
       if (response.ok && result.success) {
-        // Track successful submission
+        // Track successful submission with Google Analytics
         GAEvent.formSubmit(`${service}_quote_form`, {
           service: data.service,
           leadId: result.leadId
         })
+        
+        // Track conversion
+        GAEvent.conversion('quote_request', 100)
+        
+        // Track with Microsoft Clarity
+        ClarityTracking.formSubmit(`${service}_quote_form`, true)
+        ClarityTracking.quoteRequest(data.service || service)
+        ClarityTracking.leadGenerated(`${service}_service_page`)
 
         setSubmitStatus({
           type: 'success',
@@ -82,12 +101,22 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
           setSubmitStatus({ type: null, message: '' })
         }, 10000)
       } else {
+        // Track form error
+        GAEvent.custom('form_error', {
+          form: `${service}_quote_form`,
+          error: result.message
+        })
+        ClarityTracking.formError(`${service}_quote_form`, result.message || 'submission_failed')
+        
         setSubmitStatus({
           type: 'error',
           message: result.message || 'Something went wrong. Please try again.'
         })
       }
     } catch (error) {
+      // Track form error
+      ClarityTracking.formError(`${service}_quote_form`, 'network_error')
+      
       setSubmitStatus({
         type: 'error',
         message: 'Unable to submit form. Please try calling us at 435-922-4340.'
@@ -118,6 +147,7 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
               }`}
               placeholder="Enter first name"
               disabled={isSubmitting}
+              onFocus={handleFormInteraction}
             />
             {errors.firstName && (
               <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>

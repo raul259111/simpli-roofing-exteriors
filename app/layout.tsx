@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import Analytics from '@/components/Analytics'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import MicrosoftClarity from '@/components/MicrosoftClarity'
 import WebVitals from '@/components/WebVitals'
 import LocalBusinessSchema from '@/components/LocalBusinessSchema'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -76,6 +77,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <WebVitals />
         {/* <PopupTrigger /> - Disabled for professional experience */}
         {/* <LeadNotification /> - Internal use only */}

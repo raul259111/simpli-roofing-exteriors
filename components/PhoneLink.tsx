@@ -1,5 +1,7 @@
 'use client'
 import { Phone } from 'lucide-react'
+import { GAEvent } from '@/components/GoogleAnalytics'
+import { ClarityTracking } from '@/components/MicrosoftClarity'
 
 interface PhoneLinkProps {
   number?: string
@@ -20,28 +22,17 @@ export default function PhoneLink({
 }: PhoneLinkProps) {
   
   const handleClick = () => {
-    // Track phone click
+    // Track phone click with Google Analytics
+    GAEvent.phoneClick(source, number)
+    
+    // Track phone click with Microsoft Clarity
+    ClarityTracking.phoneClick(number)
+    
+    // Track conversion for phone calls
+    GAEvent.conversion('phone_call', 50)
+    
+    // Track with custom analytics endpoint for internal tracking
     if (typeof window !== 'undefined') {
-      // Track with Clarity
-      if ((window as any).clarity) {
-        (window as any).clarity('event', 'phone_click', {
-          number: number,
-          source: source,
-          timestamp: new Date().toISOString(),
-          page: window.location.pathname
-        })
-      }
-
-      // Track with Google Analytics (if available)
-      if ((window as any).gtag) {
-        (window as any).gtag('event', 'click_to_call', {
-          event_category: 'engagement',
-          event_label: source,
-          value: number
-        })
-      }
-
-      // Track with custom analytics endpoint
       fetch('/api/analytics/phone-click', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,7 +43,9 @@ export default function PhoneLink({
           referrer: document.referrer,
           timestamp: new Date().toISOString()
         })
-      }).catch(err => console.error('Failed to track phone click:', err))
+      }).catch(() => {
+        // Silently fail - analytics shouldn't break functionality
+      })
     }
   }
 

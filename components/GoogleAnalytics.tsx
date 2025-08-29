@@ -3,7 +3,12 @@ import Script from 'next/script'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX'
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+
+// Don't load GA if no measurement ID is provided
+if (!GA_MEASUREMENT_ID) {
+  console.info('Google Analytics not configured - skipping initialization')
+}
 
 declare global {
   interface Window {
@@ -101,11 +106,19 @@ export const GAEvent = {
 export default function GoogleAnalytics() {
   useGoogleAnalytics()
 
+  // Don't render if no GA ID is configured
+  if (!GA_MEASUREMENT_ID) {
+    return null
+  }
+
   return (
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="afterInteractive"
+        onError={() => {
+          console.warn('Google Analytics failed to load')
+        }}
       />
       <Script id="google-analytics" strategy="afterInteractive">
         {`
@@ -113,10 +126,20 @@ export default function GoogleAnalytics() {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           
+          // Default consent mode
+          gtag('consent', 'default', {
+            'analytics_storage': 'granted',
+            'ad_storage': 'denied',
+            'functionality_storage': 'granted',
+            'personalization_storage': 'denied',
+            'security_storage': 'granted'
+          });
+          
           gtag('config', '${GA_MEASUREMENT_ID}', {
             page_path: window.location.pathname,
             send_page_view: true,
-            cookie_flags: 'max-age=7200;secure;samesite=none'
+            cookie_flags: 'max-age=7200;secure;samesite=none',
+            anonymize_ip: true
           });
 
           // Enhanced Ecommerce tracking
@@ -124,6 +147,11 @@ export default function GoogleAnalytics() {
             'custom_map.dimension1': 'service_type',
             'custom_map.dimension2': 'lead_source',
             'custom_map.dimension3': 'user_type'
+          });
+          
+          // Enhanced conversion tracking
+          gtag('set', 'user_properties', {
+            'crm_id': null
           });
         `}
       </Script>

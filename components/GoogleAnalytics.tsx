@@ -27,6 +27,13 @@ export function useGoogleAnalytics() {
   }, [pathname, searchParams])
 }
 
+// Generic gtag send event helper function
+export const gtagSendEvent = (eventName: string, parameters?: Record<string, any>) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, parameters)
+  }
+}
+
 // Analytics event tracking helper
 export const GAEvent = {
   // Track form submissions
@@ -60,6 +67,28 @@ export const GAEvent = {
         send_to: `${GA_MEASUREMENT_ID}/${conversionType}`,
         value: value || 0,
         currency: 'USD'
+      })
+    }
+  },
+
+  // Track Google Ads conversion for form submissions
+  adsConversionFormSubmission: (serviceType: string, formLocation: string, conversionValue?: number) => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      // Send the conversion event
+      window.gtag('event', 'ads_conversion_form_submission', {
+        send_to: `${GA_MEASUREMENT_ID}/conversion`,
+        value: conversionValue || 0,
+        currency: 'USD',
+        service_type: serviceType,
+        form_location: formLocation
+      })
+      
+      // Also send as a regular event for GA4
+      window.gtag('event', 'generate_lead', {
+        currency: 'USD',
+        value: conversionValue || 0,
+        service_type: serviceType,
+        form_location: formLocation
       })
     }
   },

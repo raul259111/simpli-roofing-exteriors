@@ -4,6 +4,7 @@ import { Metadata } from 'next'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { Users, Upload, Send, CheckCircle, AlertCircle, Briefcase, Mail, User, Phone, FileText } from 'lucide-react'
+import { GAEvent } from '@/components/GoogleAnalytics'
 
 // Note: Metadata doesn't work in client components, but we'll keep the structure
 // export const metadata: Metadata = {
@@ -71,6 +72,19 @@ export default function Careers() {
       })
 
       if (response.ok) {
+        // Track successful submission
+        GAEvent.formSubmit('careers_form', {
+          position: formData.position || 'General Application',
+          experience: formData.experience
+        })
+        
+        // Track Google Ads conversion
+        GAEvent.adsConversionFormSubmission(
+          'careers',
+          'careers_page',
+          25 // Lower value for career inquiries
+        )
+        
         setSubmitStatus('success')
         setFormData({
           name: '',

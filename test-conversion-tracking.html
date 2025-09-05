@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads Conversion Tracking Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Google Ads Conversion Tracking Test</h1>
+        
+        <p>This page simulates the conversion tracking events that are fired when forms are submitted on the Simpli Exteriors website.</p>
+        
+        <h2>Test Form Submissions:</h2>
+        
+        <button class="test-button" onclick="testContactForm()">Test Contact Form</button>
+        <button class="test-button" onclick="testRoofingQuote()">Test Roofing Quote</button>
+        <button class="test-button" onclick="testWindowsQuote()">Test Windows Quote</button>
+        <button class="test-button" onclick="testSidingQuote()">Test Siding Quote</button>
+        <button class="test-button" onclick="testGuttersQuote()">Test Gutters Quote</button>
+        <button class="test-button" onclick="testCareersForm()">Test Careers Form</button>
+        <button class="test-button" onclick="testQuickQuote()">Test Quick Quote Modal</button>
+        
+        <h2>Console Output:</h2>
+        <div class="output" id="output">
+            <div class="info">Ready to test conversion tracking events...</div>
+        </div>
+    </div>
+
+    <!-- Mock Google Tag Manager -->
+    <script>
+        // Mock gtag function to capture events
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){
+            const args = Array.from(arguments);
+            dataLayer.push(args);
+            
+            // Log to our custom output
+            if (args[0] === 'event') {
+                logEvent(args[1], args[2]);
+            }
+        }
+        
+        // Mock GA Measurement ID
+        const GA_MEASUREMENT_ID = 'G-MOCKTEST123';
+        
+        // Initialize mock gtag
+        gtag('js', new Date());
+        gtag('config', GA_MEASUREMENT_ID);
+        
+        // Mock GAEvent object (simulating the one from GoogleAnalytics.tsx)
+        const GAEvent = {
+            formSubmit: function(formName, formData) {
+                gtag('event', 'form_submit', {
+                    event_category: 'engagement',
+                    event_label: formName,
+                    form_name: formName,
+                    ...formData
+                });
+            },
+            
+            adsConversionFormSubmission: function(serviceType, formLocation, conversionValue) {
+                // Send the conversion event
+                gtag('event', 'ads_conversion_form_submission', {
+                    send_to: GA_MEASUREMENT_ID + '/conversion',
+                    value: conversionValue || 0,
+                    currency: 'USD',
+                    service_type: serviceType,
+                    form_location: formLocation
+                });
+                
+                // Also send as a regular event for GA4
+                gtag('event', 'generate_lead', {
+                    currency: 'USD',
+                    value: conversionValue || 0,
+                    service_type: serviceType,
+                    form_location: formLocation
+                });
+            }
+        };
+        
+        // Logging function
+        function logEvent(eventName, parameters) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            
+            if (eventName === 'ads_conversion_form_submission') {
+                logEntry.className = 'success';
+                logEntry.innerHTML = `<strong>[${timestamp}] 🎯 CONVERSION EVENT:</strong> ${eventName}<br>
+                    Service: ${parameters.service_type}<br>
+                    Location: ${parameters.form_location}<br>
+                    Value: $${parameters.value}<br>
+                    Send To: ${parameters.send_to}`;
+            } else if (eventName === 'generate_lead') {
+                logEntry.className = 'info';
+                logEntry.innerHTML = `<strong>[${timestamp}] 📊 GA4 EVENT:</strong> ${eventName}<br>
+                    Service: ${parameters.service_type}<br>
+                    Location: ${parameters.form_location}<br>
+                    Value: $${parameters.value}`;
+            } else {
+                logEntry.className = 'info';
+                logEntry.innerHTML = `<strong>[${timestamp}] Event:</strong> ${eventName}<br>
+                    ${JSON.stringify(parameters, null, 2)}`;
+            }
+            
+            output.appendChild(logEntry);
+            output.appendChild(document.createElement('hr'));
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Test functions
+        function testContactForm() {
+            console.log('Testing Contact Form Conversion...');
+            GAEvent.formSubmit('contact_form', {
+                service: 'roofing',
+                source: 'Contact Page',
+                leadId: 'TEST-' + Date.now()
+            });
+            GAEvent.adsConversionFormSubmission('roofing', 'contact_page', 0);
+        }
+        
+        function testRoofingQuote() {
+            console.log('Testing Roofing Quote Conversion...');
+            GAEvent.formSubmit('roofing_quote_form', {
+                service: 'roofing',
+                leadId: 'TEST-' + Date.now()
+            });
+            GAEvent.adsConversionFormSubmission('roofing', 'roofing_service_page', 100);
+        }
+        
+        function testWindowsQuote() {
+            console.log('Testing Windows Quote Conversion...');
+            GAEvent.formSubmit('windows_quote_form', {
+                service: 'windows',
+                leadId: 'TEST-' + Date.now()
+            });
+            GAEvent.adsConversionFormSubmission('windows', 'windows_service_page', 100);
+        }
+        
+        function testSidingQuote() {
+            console.log('Testing Siding Quote Conversion...');
+            GAEvent.formSubmit('siding_quote_form', {
+                service: 'siding',
+                leadId: 'TEST-' + Date.now()
+            });
+            GAEvent.adsConversionFormSubmission('siding', 'siding_service_page', 100);
+        }
+        
+        function testGuttersQuote() {
+            console.log('Testing Gutters Quote Conversion...');
+            GAEvent.formSubmit('gutters_quote_form', {
+                service: 'gutters',
+                leadId: 'TEST-' + Date.now()
+            });
+            GAEvent.adsConversionFormSubmission('gutters', 'gutters_service_page', 100);
+        }
+        
+        function testCareersForm() {
+            console.log('Testing Careers Form Conversion...');
+            GAEvent.formSubmit('careers_form', {
+                position: 'Roofing Technician',
+                experience: '5+ years'
+            });
+            GAEvent.adsConversionFormSubmission('careers', 'careers_page', 25);
+        }
+        
+        function testQuickQuote() {
+            console.log('Testing Quick Quote Modal Conversion...');
+            GAEvent.formSubmit('quick_quote_modal', {
+                service: 'windows'
+            });
+            GAEvent.adsConversionFormSubmission('windows', 'quick_quote_modal', 75);
+        }
+        
+        // Log initial state
+        console.log('Conversion Tracking Test Page Loaded');
+        console.log('DataLayer:', window.dataLayer);
+    </script>
+</body>
+</html>

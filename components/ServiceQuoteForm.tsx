@@ -83,6 +83,13 @@ export default function ServiceQuoteForm({ service, title }: ServiceQuoteFormPro
         // Track conversion
         GAEvent.conversion('quote_request', 100)
         
+        // Track Google Ads conversion
+        GAEvent.adsConversionFormSubmission(
+          data.service || service,
+          `${service}_service_page`,
+          100 // Assign value to leads if needed
+        )
+        
         // Track with Microsoft Clarity
         ClarityTracking.formSubmit(`${service}_quote_form`, true)
         ClarityTracking.quoteRequest(data.service || service)

@@ -57,6 +57,13 @@ export default function ContactForm({ service, source = 'Contact Form', compact 
           leadId: result.leadId
         })
 
+        // Track Google Ads conversion
+        GAEvent.adsConversionFormSubmission(
+          data.service || 'general',
+          'contact_page',
+          0 // You can assign a value to leads if needed
+        )
+
         setSubmitStatus({
           type: 'success',
           message: result.message || 'Thank you! We\'ll contact you within 1 business day.'

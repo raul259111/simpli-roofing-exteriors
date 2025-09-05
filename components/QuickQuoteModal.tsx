@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { X, Send, Phone, CheckCircle } from 'lucide-react'
+import { GAEvent } from '@/components/GoogleAnalytics'
 
 interface QuickQuoteModalProps {
   isOpen: boolean
@@ -56,6 +57,18 @@ export default function QuickQuoteModal({ isOpen, onClose, service = '' }: Quick
       })
 
       if (response.ok) {
+        // Track successful submission
+        GAEvent.formSubmit('quick_quote_modal', {
+          service: formData.service || 'not_specified'
+        })
+        
+        // Track Google Ads conversion
+        GAEvent.adsConversionFormSubmission(
+          formData.service || 'general',
+          'quick_quote_modal',
+          75 // Assign value to modal quotes if needed
+        )
+        
         setSubmitStatus('success')
         setTimeout(() => {
           onClose()

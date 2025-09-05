@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Send, Phone, Clock } from 'lucide-react'
+import { GAEvent } from '@/components/GoogleAnalytics'
 
 interface ServiceQuickQuoteProps {
   service: string
@@ -42,6 +43,19 @@ export default function ServiceQuickQuote({ service, serviceName }: ServiceQuick
       })
 
       if (response.ok) {
+        // Track successful submission
+        GAEvent.formSubmit('quick_quote_form', {
+          service: service,
+          timeframe: formData.timeframe
+        })
+        
+        // Track Google Ads conversion
+        GAEvent.adsConversionFormSubmission(
+          service,
+          'service_quick_quote_widget',
+          50 // Assign value to quick quotes if needed
+        )
+        
         setSubmitStatus('success')
         setFormData({ name: '', phone: '', email: '', timeframe: 'flexible' })
         setTimeout(() => setSubmitStatus('idle'), 5000)
